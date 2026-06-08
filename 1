@@ -646,7 +646,7 @@
 <div class="toast-stack" id="toastStack"></div>
 
 <script>
-  // ---------- БАЗА ДАННЫХ (полная) ----------
+  // ========== ДАННЫЕ ==========
   const DB = {
     products: [
       {id:1, name:'Футболка Nike', description:'Хлопковая футболка', category:'Футболки', brand:'Nike', size:'M', color:'Белый', season:'лето', price:1990, status:'в наличии'},
@@ -709,16 +709,45 @@
     ],
   };
 
-  // ----- Конфигурация секций -----
+  // ----- КОНФИГУРАЦИЯ СЕКЦИЙ -----
   const sectionsConf = {
-    products: { title:'Товары', table:'products', heads:['ID','Название','Категория','Бренд','Размер','Цена','Статус'], cols:['id','name','category','brand','size','price','status'], badgeCol:'status', badgeMap:{'в наличии':'success','нет в наличии':'danger'}, priceCol:'price', stats:()=>{ const a=DB.products; return [{label:'Товаров', icon:'fa-tags', value:a.length},{label:'В наличии', icon:'fa-check-circle', value:a.filter(p=>p.status==='в наличии').length},{label:'Средняя цена', icon:'fa-ruble-sign', value:a.length?Math.round(a.reduce((s,p)=>s+p.price,0)/a.length)+'₽':'—'},{label:'Брендов', icon:'fa-certificate', value:new Set(a.map(p=>p.brand)).size}]}},
-    categories: { title:'Категории', table:'categories', heads:['ID','Название','Описание'], cols:['id','name','description'], stats:()=>[{label:'Категории', icon:'fa-layer-group', value:DB.categories.length},{label:'Товары', icon:'fa-tags', value:DB.products.length},{label:'Бренды', icon:'fa-certificate', value:DB.brands.length},{label:'В наличии', icon:'fa-box', value:DB.products.filter(p=>p.status==='в наличии').length}]},
-    brands: { title:'Бренды', table:'brands', heads:['ID','Бренд','Страна','Описание'], cols:['id','name','country','description'], stats:()=>[{label:'Бренды', icon:'fa-certificate', value:DB.brands.length},{label:'Стран', icon:'fa-globe', value:new Set(DB.brands.map(b=>b.country)).size},{label:'Товары', icon:'fa-tags', value:DB.products.length},{label:'Категории', icon:'fa-layer-group', value:DB.categories.length}]},
-    customers: { title:'Клиенты', table:'customers', heads:['ID','Имя','Фамилия','Телефон','Email','Статус'], cols:['id','first_name','last_name','phone','email','status'], badgeCol:'status', badgeMap:{'постоянный':'success','обычный':'info'}, stats:()=>[{label:'Клиентов', icon:'fa-users', value:DB.customers.length},{label:'Постоянных', icon:'fa-star', value:DB.customers.filter(c=>c.status==='постоянный').length},{label:'Заказов', icon:'fa-bag-shopping', value:DB.orders.length},{label:'Выручка', icon:'fa-ruble-sign', value:DB.orders.reduce((s,o)=>s+o.total,0)+'₽'}]},
-    orders: { title:'Заказы', table:'orders', heads:['ID','Клиент','Дата','Статус','Сумма'], cols:['id','customer','order_date','status','total'], badgeCol:'status', badgeMap:{'оплачен':'success','новый':'info','доставлен':'warning','отменён':'danger'}, priceCol:'total', stats:()=>{ let o=DB.orders; return [{label:'Заказы', icon:'fa-bag-shopping', value:o.length},{label:'Оплачено', icon:'fa-check', value:o.filter(x=>x.status==='оплачен').length},{label:'В работе', icon:'fa-clock', value:o.filter(x=>x.status==='новый').length},{label:'Выручка', icon:'fa-ruble-sign', value:o.filter(x=>x.status==='оплачен').reduce((s,o)=>s+o.total,0)+'₽'}]}},
-    payments: { title:'Платежи', table:'payments', heads:['ID','Заказ','Метод','Сумма','Статус','Дата'], cols:['id','order_id','method','amount','status','date'], badgeCol:'status', badgeMap:{'оплачен':'success','ожидание':'warning'}, priceCol:'amount', stats:()=>{ let p=DB.payments; let paid=p.filter(x=>x.status==='оплачен'); return [{label:'Платежей', icon:'fa-credit-card', value:p.length},{label:'Оплачено', icon:'fa-check', value:paid.length},{label:'Сумма', icon:'fa-ruble-sign', value:paid.reduce((s,x)=>s+x.amount,0)+'₽'},{label:'Ожидание', icon:'fa-hourglass', value:p.filter(x=>x.status==='ожидание').length}]}},
-    stock: { title:'Остатки', table:'stock', heads:['ID','Товар','Склад','Кол-во','Обновлено'], cols:['id','product','warehouse','quantity','last_update'], stats:()=>{ let s=DB.stock; let totalQ=s.reduce((a,b)=>a+b.quantity,0); return [{label:'Позиций', icon:'fa-boxes', value:s.length},{label:'Единиц', icon:'fa-cubes', value:totalQ},{label:'Нулевые', icon:'fa-triangle-exclamation', value:s.filter(x=>x.quantity===0).length},{label:'Складов', icon:'fa-warehouse', value:new Set(s.map(x=>x.warehouse)).size}]}},
-    suppliers: { title:'Поставщики', table:'suppliers', heads:['ID','Название','Контакт','Телефон','Адрес'], cols:['id','name','contact','phone','address'], stats:()=>[{label:'Поставщики', icon:'fa-truck', value:DB.suppliers.length},{label:'Товары', icon:'fa-tags', value:DB.products.length},{label:'Склады', icon:'fa-building', value:DB.warehouses.length},{label:'Города', icon:'fa-map-pin', value:new Set(DB.suppliers.map(s=>s.address)).size}]},
-    warehouses: { title:'Склады', table:'warehouses', heads:['ID','Название','Адрес','Ответственный','Телефон'], cols:['id','name','address','responsible','phone'], stats:()=>[{label:'Склады', icon:'fa-building', value:DB.warehouses.length},{label:'Остатков', icon:'fa-box', value:DB.stock.length},{label:'Единиц', icon:'fa-cubes', value:DB.stock.reduce((s,x)=>s+x.quantity,0)},{label:'Сотрудников', icon:'fa-id-card', value:DB.employees.length}]},
-    employees: { title:'Сотрудники', table:'employees', heads:['ID','Имя','Фамилия','Должность','Телефон','Дата найма'], cols:['id','first_name','last_name','position','phone','hire_date'], stats:()=>[{label:'Сотрудники', icon:'fa-id-badge', value:DB.employees.length},{label:'Должности', icon:'fa-briefcase', value:new Set(DB.employees.map(e=>e.position)).size},{label:'Клиенты', icon:'fa-users', value:DB.customers.length},{label:'Заказы', icon:'fa-bag-shopping', value:DB.orders.length}]},
-    discounts: { title:'Скидки', table:'discounts', heads:['ID','Название','Тип','Значение','Начало','К
+    products: {
+      title:'Товары', table:'products',
+      heads:['ID','Название','Категория','Бренд','Размер','Цена','Статус'],
+      cols:['id','name','category','brand','size','price','status'],
+      badgeCol:'status', badgeMap:{'в наличии':'success','нет в наличии':'danger'}, priceCol:'price',
+      stats:()=>{ const a=DB.products; return [
+        {label:'Товаров', icon:'fa-tags', value:a.length},
+        {label:'В наличии', icon:'fa-check-circle', value:a.filter(p=>p.status==='в наличии').length},
+        {label:'Средняя цена', icon:'fa-ruble-sign', value:a.length?Math.round(a.reduce((s,p)=>s+p.price,0)/a.length)+'₽':'—'},
+        {label:'Брендов', icon:'fa-certificate', value:new Set(a.map(p=>p.brand)).size}
+      ]},
+      getEmpty:()=>({name:'', category:'Футболки', brand:'Nike', size:'M', price:0, status:'в наличии'}),
+      formHtml:(data)=>`
+        <div class="form-group"><label>Название</label><input id="f-name" value="${data.name||''}"></div>
+        <div class="row-2col"><div class="form-group"><label>Категория</label><select id="f-category">${DB.categories.map(c=>`<option ${data.category===c.name?'selected':''}>${c.name}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Бренд</label><select id="f-brand">${DB.brands.map(b=>`<option ${data.brand===b.name?'selected':''}>${b.name}</option>`).join('')}</select></div></div>
+        <div class="row-2col"><div class="form-group"><label>Размер</label><input id="f-size" value="${data.size||''}"></div>
+        <div class="form-group"><label>Цена (₽)</label><input type="number" id="f-price" value="${data.price||0}"></div></div>
+        <div class="form-group"><label>Статус</label><select id="f-status"><option ${data.status==='в наличии'?'selected':''}>в наличии</option><option ${data.status==='нет в наличии'?'selected':''}>нет в наличии</option></select></div>`,
+      collect:()=>({name:g('f-name'), category:g('f-category'), brand:g('f-brand'), size:g('f-size'), price:parseInt(g('f-price')), status:g('f-status')})
+    },
+    categories: {
+      title:'Категории', table:'categories', heads:['ID','Название','Описание'], cols:['id','name','description'],
+      stats:()=>[{label:'Категории', icon:'fa-layer-group', value:DB.categories.length},{label:'Товары', icon:'fa-tags', value:DB.products.length},{label:'Бренды', icon:'fa-certificate', value:DB.brands.length},{label:'В наличии', icon:'fa-box', value:DB.products.filter(p=>p.status==='в наличии').length}],
+      getEmpty:()=>({name:'', description:''}),
+      formHtml:(d)=>`<div class="form-group"><label>Название</label><input id="f-name" value="${d.name||''}"></div><div class="form-group"><label>Описание</label><textarea id="f-description">${d.description||''}</textarea></div>`,
+      collect:()=>({name:g('f-name'), description:g('f-description')})
+    },
+    brands: {
+      title:'Бренды', table:'brands', heads:['ID','Бренд','Страна','Описание'], cols:['id','name','country','description'],
+      stats:()=>[{label:'Бренды', icon:'fa-certificate', value:DB.brands.length},{label:'Стран', icon:'fa-globe', value:new Set(DB.brands.map(b=>b.country)).size},{label:'Товары', icon:'fa-tags', value:DB.products.length},{label:'Категории', icon:'fa-layer-group', value:DB.categories.length}],
+      getEmpty:()=>({name:'', country:'', description:''}),
+      formHtml:(d)=>`<div class="row-2col"><div class="form-group"><label>Название</label><input id="f-name" value="${d.name||''}"></div><div class="form-group"><label>Страна</label><input id="f-country" value="${d.country||''}"></div></div><div class="form-group"><label>Описание</label><textarea id="f-description">${d.description||''}</textarea></div>`,
+      collect:()=>({name:g('f-name'), country:g('f-country'), description:g('f-description')})
+    },
+    customers: {
+      title:'Клиенты', table:'customers', heads:['ID','Имя','Фамилия','Телефон','Email','Статус'], cols:['id','first_name','last_name','phone','email','status'], badgeCol:'status', badgeMap:{'постоянный':'success','обычный':'info'},
+      stats:()=>[{label:'Клиентов', icon:'fa-users', value:DB.customers.length},{label:'Постоянных', icon:'fa-star', value:DB.customers.filter(c=>c.status==='постоянный').length},{label:'Заказов', icon:'fa-bag-shopping', value:DB.orders.length},{label:'Выручка', icon:'fa-ruble-sign', value:DB.orders.reduce((s,o)=>s+o.total,0)+'₽'}],
+      getEmpty:()=>({first_name:'', last_name:'', phone:'', email:'', reg_date:new Date().toISOString().slice(0,10), status:'обычный'}),
+      formHtml:(d)=>`<div class="row-2col"><div class="form-group"><label>Имя</label><input id="f-first_name" value="${d.first_name||''}"></div><div class="form-group"><label>Фамилия</label><input id="f-last_name" value="${d.last_name||''}"></div></div><div class="form-group"><label>Телефон</label><input id="f-phone" value="${d.phone||''}"></div><div class="form-group"><label>Email</label><input id="f-email" value="${d.email||''}"></div><div class="row-2col"><div class="form-group"><label>Дата рег.</label><input type="date" id="f-reg_date" value="${d.reg_date||''}"></div><div class="form-group"><label>Статус</label><select id="f-status"><option ${d.status==='постоянный'?'selected':''}>постоянный</option><option ${d.status==='обычный'?'selected':''}>обычный</option></select></div></
